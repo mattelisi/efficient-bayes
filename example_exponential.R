@@ -54,7 +54,7 @@ legend('topright',"prior",lwd=4, col="dark grey",bty="n")
 
 # calculate posterior mean for a bunch of values
 # (setting x_internal to expected value)
-x_i <- seq(-2,2, length.out=50)
+x_i <- seq(0,2, length.out=50)
 post_mean <- rep(NA, 50)
 post_sd <- rep(NA, 50)
 for(i in 1:length(x_i)){
