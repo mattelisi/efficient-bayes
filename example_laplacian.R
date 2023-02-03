@@ -24,9 +24,6 @@ likelihood_s <- function(x, x_internal, noise_sd=0.05)
   return(dens)
 }
 
-# # sanity check
-FUN <- function(x){ likelihood_s(x, x_internal=pnorm(0)) }
-integrate(FUN, lower=0, upper= Inf)
 
 # plot
 
@@ -45,7 +42,7 @@ prior_x <- prior_x/max(prior_x) * max(lik_0)/2
 
 palette <- viridis::inferno(4)
 
-png("laplacian_prior.png", width=800, height=800)
+#png("laplacian_prior.png", width=800, height=800)
 
 par(mfrow=c(2,2))
 plot(x, prior_x, col="dark grey", type="l", lwd=4, ylab = "density", ylim=c(0, max(lik_0)), main="example likelihoods")
@@ -78,5 +75,36 @@ abline(v=0, lty=2)
 
 plot(x_i, post_sd, type="l",lwd=3,col="blue",xlab="true value",ylab="posterior SD")
 
+#dev.off()
+
+
+# simulate responses
+N_sim <- 100
+x_test <- seq(-2,2, length.out=25)
+sd_mean <- rep(NA, length(x_test))
+sd_map <- rep(NA, length(x_test))
+for(s in 1:length(x_test)){
+  internal_samples <- rnorm(N_sim, mean=prior_cdf(x_test[s]),sd=0.05)
+  post_mean <- rep(NA, N_sim)
+  post_max <- rep(NA, N_sim)
+  for(i in 1:N_sim){
+    lik_i <- likelihood_s(x, x_internal=internal_samples[i])
+    post_i <-  (lik_i * prior_x) / sum(lik_i * prior_x)
+    post_mean[i] <- sum(x*post_i)
+    post_max[i] <- x[post_i==max(post_i)]
+  }
+  cat(s," ")
+  sd_mean[s] <- sd(post_mean)
+  sd_map[s] <- sd(post_max)
+}
+
+png("laplacian_resp_sd.png", width=400, height=400)
+par(mfrow=c(1,1))
+plot(x_test, sd_mean, type="o", col="blue",xlab="x",ylab="sd")
+lines(x_test, sd_map, type="o", col="red")
+legend('bottomleft',c("mean","MAP"), col=c("blue","red"),lwd=1,pch=21, bty="n")
 dev.off()
+
+
+
 
